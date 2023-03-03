@@ -1,0 +1,11 @@
+{
+    "vue": {
+        "username": "your username",
+        "password": "your password"
+    },
+    "influx": {
+        "host": "your influx host",
+        "org-id": "your influx org id",
+        "bucket": "your influx bucket"
+    }
+}
