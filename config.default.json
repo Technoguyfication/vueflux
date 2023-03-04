@@ -1,7 +1,19 @@
 {
+    "metrics": {
+
+    },
     "vue": {
         "username": "your username",
-        "password": "your password"
+        "password": "your password",
+        "devices": [
+            {
+                "gid": "your device name (must match the name in the vue app)",
+                "channels": [
+                    "You can tag channels with a name here",
+                    "These must be in the same order as the channels in the vue app"
+                ]
+            }
+        ]
     },
     "influx": {
         "host": "your influx host",
