@@ -48,8 +48,11 @@ def config_value(namespaced_key: str) -> str:
 
     try:
         for key in keys:
+            if isinstance(value, list):
+                key = int(key)
+            
             value = value[key]
-    except KeyError:
+    except:
         return None
     return str(value)
 
