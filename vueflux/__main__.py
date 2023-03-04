@@ -1,5 +1,7 @@
 from pathlib import Path
 from pyemvue import PyEmVue
+from pyemvue.enums import Scale, Unit
+from pyemvue.device import VueDevice, VueUsageDevice
 import json
 import logging
 
@@ -35,6 +37,56 @@ def main(debug: bool, show_devices: bool, token_file: str = None, **kwargs):
             print("Channels:")
             for channel in device.channels:
                 print(f"Channel {channel.channel_num} - Multiplier: {channel.channel_multiplier}")
+
+            # Print usages for device and all channels
+            print("Usages:")
+
+            usage_amps: dict[str, VueUsageDevice] = vue.get_device_list_usage(deviceGids=[device.device_gid], unit=Unit.AMPHOURS.value, scale=Scale.SECOND.value, instant=None)
+            usage_watts: dict[str, VueUsageDevice] = vue.get_device_list_usage(deviceGids=[device.device_gid], unit=Unit.KWH.value, scale=Scale.SECOND.value, instant=None)
+
+            MULTIPLIER = 60 * 60 # Convert from -hours to instantaneous usage
+
+            # Aggregate data for each channel into a single dict
+            channels: dict[str, dict[str, float]] = {}
+
+            for _device_gid, device in usage_amps.items():
+                for _channel_gid, channel in device.channels.items():
+                    amps = channel.usage * MULTIPLIER
+                    watts = usage_watts[device.device_gid].channels[channel.channel_num].usage * MULTIPLIER * 1000 if channel.channel_num in usage_watts[device.device_gid].channels else None
+                    volts = watts / amps if amps > 0 and watts else None
+
+                    channels[channel.channel_num] = {
+                        "amps": amps,
+                        "watts": watts,
+                        "volts": volts
+                    }
+
+
+            # Print usages
+            for channel_num, channel in channels.items():
+                
+                try:
+                    chan_num_int = int(channel_num)
+                    friendly_name = config_value(f"vue.devices.{str(device.device_gid)}.channels.{chan_num_int - 1}")
+                except:
+                    friendly_name = None
+                
+                print(f"Channel {channel_num}{f' ({friendly_name})' if friendly_name else ''}: ", end="")
+
+                # Amps always exists
+                print(f"{channel['amps']:.2f}A", end="")
+
+                # Watts and volts are optional
+                if channel["watts"] is not None:
+                    print(f" {channel['watts']:.2f}W", end="")
+                if channel["volts"] is not None:
+                    print(f" {channel['volts']:.2f}V", end="")
+
+                print()
+            
+            print() 
+
+                
 
 
 def config_value(namespaced_key: str) -> str:
