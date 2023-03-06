@@ -10,11 +10,11 @@
             "request": "launch",
             "module": "vueflux",
             "args": [
-                // "--verbose",
-                "--show-devices",
+                "--debug",
+                // "--show-devices",
                 "--token-file", "tokens.json"
             ],
-            "justMyCode": true
+            "justMyCode":  true
         }
     ]
 }
